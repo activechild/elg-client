@@ -1,0 +1,7 @@
+*.a
+*.dylib
+*.gz
+*.o
+*.so
+*.so.*
+elg_client_demo
