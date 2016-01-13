@@ -16,10 +16,10 @@
 
 /********************************************************************
                     Skyhook ELG Client Demo
-This program demonstrates the neccessary steps needed to perform a 
-location request/response and how to setup the communication to/from 
+This program demonstrates the neccessary steps needed to perform a
+location request/response and how to setup the communication to/from
 the Embedded Location Gateway (ELG).
-It is a Linux based program, but the elements can be easily ported to 
+It is a Linux based program, but the elements can be easily ported to
 an embeddded C project.
 *********************************************************************/
 
@@ -59,7 +59,7 @@ int main(int argc, char**argv)
 {
     /* create buffer to hold packet */
     unsigned char buff[1024];
-    
+
     /* initialize the random number generator */
     srand((unsigned int)time(NULL));
 
@@ -67,16 +67,16 @@ int main(int argc, char**argv)
     /* use the wifi chip MAC address */
     /* here we just set it to a constant */
     unsigned char device_MAC[] = {0xCA,0xFE,0xBA,0xBE,0xCA,0xFE};
-    
-    /* allocate buffer 
+
+    /* allocate buffer
        memory allocation can be dynamic or static
-       make sure to set the ap_count to the actual value of the wifi scan count 
+       make sure to set the ap_count to the actual value of the wifi scan count
        but limit to what fits into the buffer
     */
 
     const int ap_count = 4;
     struct ap_t aps[ap_count];
-   
+
    /* load wifi scan result */
    /* for demo purposes we assign them manually */
     aps[0].rssi = -50;
@@ -86,7 +86,7 @@ int main(int argc, char**argv)
     aps[0].MAC[3] = 0x82;
     aps[0].MAC[4] = 0xD8;
     aps[0].MAC[5] = 0x8C;
-    
+
     aps[1].rssi = -50;
     aps[1].MAC[0] = 0x00;
     aps[1].MAC[1] = 0x04;
@@ -94,7 +94,7 @@ int main(int argc, char**argv)
     aps[1].MAC[3] = 0x0E;
     aps[1].MAC[4] = 0x27;
     aps[1].MAC[5] = 0x2B;
-    
+
     aps[2].rssi = -50;
     aps[2].MAC[0] = 0x00;
     aps[2].MAC[1] = 0x01;
@@ -102,7 +102,7 @@ int main(int argc, char**argv)
     aps[2].MAC[3] = 0x55;
     aps[2].MAC[4] = 0xA5;
     aps[2].MAC[5] = 0xA3;
-    
+
     aps[3].rssi = -50;
     aps[3].MAC[0] = 0x00;
     aps[3].MAC[1] = 0x0C;
@@ -110,7 +110,7 @@ int main(int argc, char**argv)
     aps[3].MAC[3] = 0xA2;
     aps[3].MAC[4] = 0xDF;
     aps[3].MAC[5] = 0x52;
-     
+
     /* set userid and AES key */
     struct aes_key_t key = {USERID, AES_KEY};
 
@@ -134,24 +134,24 @@ int main(int argc, char**argv)
     rq.ap_count = ap_count & 0xFF; // set the number of scanned access points
     rq.aps = aps; // assign aps
 
-    // in this demo we are not using cell, ble or gps 
+    // in this demo we are not using cell, ble or gps
     // zero counts
     rq.ble_count = 0;
     rq.cell_count = 0;
-    rq.gps_count = 0;    
-   
+    rq.gps_count = 0;
+
     /****************************************
         SKYHOOK provided source code
      ****************************************/
     /* encode rq data into buffer */
-    int cnt = sky_encode_req_bin_1(buff, sizeof(buff), &rq); 
+    int cnt = sky_encode_req_bin_1(buff, sizeof(buff), &rq);
 
     if (cnt == -1)
     {
         perror("failed to encode request\n");
         exit(-1);
     }
-    
+
     /* print out the encoded buffer before encryption */
     printf("bytes: %d\n", cnt);
     puts("\n------ encoded packet -------");
@@ -174,7 +174,7 @@ int main(int argc, char**argv)
     /*********************************************
         Internet transaction handled by user
      ********************************************/
-    /* this is a sample linux code demonstrating how to send 
+    /* this is a sample linux code demonstrating how to send
        data through tcp socket to ELG server.
        on embedded devices use the cell modem or other means
        of connection to the interent */
@@ -185,13 +185,6 @@ int main(int argc, char**argv)
     // fd handler for tcp socket and connection
     int sockfd;
 
-    // open socket
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    {
-        perror("cannot open socket");
-        exit(-1);
-    }
-
     // clear server address
     memset(&serv_addr, 0, sizeof(serv_addr));
 
@@ -199,13 +192,13 @@ int main(int argc, char**argv)
 
     // lookup server ip address
     int hstnm = hostname_to_ip(SKYHOOK_ELG_SERVER_URL, ipaddr);
-    
+
     if (hstnm != 0)
     {
         puts("Could not resolve host");
         exit(-1);
     }
-    
+
     printf("Resolved host: %s\n", SKYHOOK_ELG_SERVER_URL);
     printf("server ip: %s port: %d\n", ipaddr, SKYHOOK_ELG_SERVER_PORT);
 
@@ -217,7 +210,7 @@ int main(int argc, char**argv)
     // open socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-        perror("cannot open server socket");
+        perror("cannot open socket");
         exit(-1);
     }
 
@@ -284,11 +277,11 @@ int main(int argc, char**argv)
 
     close(sockfd);
 
-    // received a server error (most likely server overload) 
+    // received a server error (most likely server overload)
     if (buff[0] == SERVER_ERR)
     {
         unsigned int err = buff[1] | (buff[2] << 8);
-        printf("SERVER ERROR %u\n", err); 
+        printf("SERVER ERROR %u\n", err);
         exit(-1);
     }
 
@@ -307,7 +300,7 @@ int main(int argc, char**argv)
         perror("failed to decrypt response");
         exit(-1);
     }
-    
+
     // print decrypted packet
     puts("\n------ decrypted recv packet -------");
     print_buff(buff, cnt);
@@ -331,5 +324,3 @@ int main(int argc, char**argv)
 
     return 0;
 }
-
-
